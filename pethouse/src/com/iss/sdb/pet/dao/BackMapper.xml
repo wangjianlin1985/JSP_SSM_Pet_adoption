@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace：必须与对应的接口全类名一致 id:必须与对应接口的某个对应的方法名一致 -->
+<mapper namespace="com.iss.sdb.pet.dao.BackMapper">
+	<!-- 用户表数据列 -->
+	<sql id="backColumns">
+		a.id AS "id",
+		a.maid_id AS "maidId",
+		m.pet_id AS "petId",
+		p.name AS "petName",
+		p.image AS "image",
+		m.user_id AS "userId",
+		u1.user_name AS "userName",
+		a.staff_id AS "staffId",
+		u2.name AS "staffName",
+		m.contacts AS "contacts",
+		m.phone AS "phone",
+		m.address AS "address",
+		a.statue AS "statue",
+		a.create_time AS "createTime"
+	</sql>
+
+	<sql id="backJoins">
+		LEFT JOIN t_medicalaid m ON a.maid_id = m.id
+		LEFT JOIN t_pet p ON m.pet_id = p.id
+		LEFT JOIN t_user u1 ON m.user_id = u1.id
+		LEFT JOIN t_user u2 ON a.staff_id = u2.id
+	</sql>
+
+	<!-- 获取单个用户信息 -->
+	<select id="get" resultType="BackModel">
+		SELECT
+		<include refid="backColumns" />
+		FROM t_back a
+		<include refid="backJoins" />
+		WHERE a.id = #{id}
+	</select>
+
+	<!-- 分页查询用户 -->
+	<select id="findPage" resultType="BackModel">
+		SELECT
+		<include refid="backColumns" />
+		FROM t_back a
+		<include refid="backJoins" />
+		<where>
+			1 = 1
+			<if test="statue != null and statue != '' and statue != -1">
+				AND a.statue = #{statue} 
+			</if>
+		</where>
+		order by a.create_time desc
+	</select>
+	<!-- 新增用户 -->
+	<insert id="add" keyProperty="id" parameterType="BackModel">
+		INSERT INTO t_back (
+			maid_id,
+			staff_id,
+			statue,
+			create_time
+		)
+		VALUES
+			(
+				(
+					SELECT
+						t.id
+					FROM
+						t_medicalaid t
+					WHERE t.pet_id=#{petId}
+					LIMIT 0,1
+				),
+				#{staffId},
+				1,
+				SYSDATE()
+			)
+	</insert>
+
+	<!-- 更新用户信息 -->
+	<update id="updateStatue">
+		UPDATE t_back SET
+		statue=#{statue}
+		WHERE id = #{id}
+	</update>
+
+
+</mapper>

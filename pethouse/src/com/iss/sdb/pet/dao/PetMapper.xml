@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace：必须与对应的接口全类名一致 id:必须与对应接口的某个对应的方法名一致 -->
+<mapper namespace="com.iss.sdb.pet.dao.PetMapper">
+	<!-- 用户表数据列 -->
+	<sql id="PetMapperColumns">
+		a.id AS "id",
+		a.type AS "type",
+	    a.name AS "name",
+	    a.other_name AS "otherName",
+	    a.en_name AS "enName",
+	    a.weight AS "weight",
+	    a.size AS "size",
+	    a.hair_color AS "hairColor",
+	    a.image AS "image",
+	    a.statue AS "statue",
+	    a.description AS "description",
+		a.create_time AS "createTime",
+		a.staff_id AS "staffId",
+		u.name AS "staffName",
+		a.b_cure_time AS "bCureTime",
+		a.cure_time AS "cureTime",
+		t.user_id AS "adoptId",
+		t.contacts AS "adoptName",
+		t.phone AS "phone",
+		t.address AS "address",
+		t.create_time AS "adoptTime"
+	</sql>
+	
+	<sql id="petJoins">
+		left join t_user u on u.id=a.staff_id
+		left join t_adopt t on t.pet_id=a.id
+	</sql>
+	
+	<!-- 获取单个用户信息 -->
+	<select id="get" resultType="PetModel">
+		SELECT
+		<include refid="PetMapperColumns" />
+		FROM t_pet a
+		<include refid="petJoins" />
+		WHERE a.id = #{id}
+	</select>
+
+	<!-- 分页查询用户 -->
+	<select id="findPage" resultType="PetModel">
+		SELECT
+		<include refid="PetMapperColumns" />
+		FROM t_pet a
+		<include refid="petJoins" />
+		<where>
+			1 = 1
+			
+			<if test="statue != null and statue != '' and statue != -1">
+				AND a.statue = #{statue} 
+			</if>
+			<if test="type != null and type != '' and type != -1">
+				AND a.type LIKE concat('%',#{type},'%')
+			</if>
+			<if test="staffId != null and staffId != '' and staffId != -1">
+				AND a.staff_id = #{staffId} 
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="otherName != null and otherName != ''">
+				AND a.other_name LIKE concat('%',#{otherName},'%')
+			</if>
+		</where>
+		order by a.create_time desc
+	</select>
+	
+	<!-- 分页查询用户 -->
+	<select id="findList" resultType="PetModel">
+		SELECT
+		<include refid="PetMapperColumns" />
+		FROM t_pet a
+		<include refid="petJoins" />
+		<where>
+			1 = 1
+			
+			<if test="statue != null and statue != '' and statue != -1">
+				AND a.statue = #{statue} 
+			</if>
+			<if test="type != null and type != '' and type != -1">
+				AND a.type LIKE concat('%',#{type},'%')
+			</if>
+			<if test="staffId != null and staffId != '' and staffId != -1">
+				AND a.staff_id = #{staffId} 
+			</if>
+			<if test="adoptId != null and adoptId != '' and adoptId != -1">
+				AND t.user_id = #{adoptId} 
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="otherName != null and otherName != ''">
+				AND a.other_name LIKE concat('%',#{otherName},'%')
+			</if>
+		</where>
+		order by a.create_time desc
+	</select>
+
+	<!-- 新增用户 -->
+	<insert id="add" keyProperty="id" parameterType="PetModel">
+		INSERT INTO t_pet (
+			type,
+			name,
+			other_name,
+			en_name,
+			weight,
+			size,
+			hair_color,
+			image,
+			statue,
+			description,
+			create_time
+		) VALUES (
+			#{type},
+		    #{name},
+		    #{otherName},
+		    #{enName},
+		    #{weight},
+		    #{size},
+		    #{hairColor},
+		    #{image},
+		    #{statue},
+		    #{description},
+			SYSDATE()
+		)
+	</insert>
+
+	<!-- 更新用户信息 -->
+	<update id="update">
+		UPDATE t_pet SET
+			type=#{type},
+		    name=#{name},
+		    other_name=#{otherName},
+		    en_name=#{enName},
+		    weight=#{weight},
+		    size=#{size},
+		    hair_color=#{hairColor},
+		    image=#{image},
+		    description=#{description}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 更新用户信息 -->
+	<update id="cure">
+		UPDATE t_pet SET
+			staff_id=#{staffId},
+		    b_cure_time=SYSDATE(),
+		    cure_time=SYSDATE(),
+		    statue=#{statue}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新用户信息 -->
+	<update id="updateStatue">
+		UPDATE t_pet SET
+		    statue=#{statue}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 删除用户 (假删除) -->
+	<delete id="delete">
+		delete from t_pet  WHERE id = #{id}
+	</delete>
+</mapper>

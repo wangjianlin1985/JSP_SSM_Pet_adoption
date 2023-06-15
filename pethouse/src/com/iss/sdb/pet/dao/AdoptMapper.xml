@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace：必须与对应的接口全类名一致 id:必须与对应接口的某个对应的方法名一致 -->
+<mapper namespace="com.iss.sdb.pet.dao.AdoptMapper">
+	<!-- 用户表数据列 -->
+	<sql id="AdoptMapperColumns">
+		a.id AS "id",
+		a.pet_id AS "petId",
+		p.name AS "petName",
+		p.image AS "image",
+		a.user_id AS "userId",
+		u.user_name AS "userName",
+		a.contacts AS "contacts",
+		a.phone AS "phone",
+		a.work AS "work",
+		a.address AS "address",
+		a.statue AS "statue",
+		a.create_time AS "createTime"
+	</sql>
+
+	<sql id="adoptJoins">
+		LEFT JOIN t_pet p ON a.pet_id = p.id
+		LEFT JOIN t_user u ON
+		a.user_id = u.id
+	</sql>
+
+	<!-- 获取单个用户信息 -->
+	<select id="get" resultType="AdoptModel">
+		SELECT
+		<include refid="AdoptMapperColumns" />
+		FROM t_adopt a
+		<include refid="adoptJoins" />
+		WHERE a.id = #{id}
+	</select>
+
+	<!-- 分页查询用户 -->
+	<select id="findPage" resultType="AdoptModel">
+		SELECT
+		<include refid="AdoptMapperColumns" />
+		FROM t_adopt a
+		<include refid="adoptJoins" />
+		order by a.create_time desc
+	</select>
+	<!-- 新增用户 -->
+	<insert id="add" keyProperty="id" parameterType="AdoptModel">
+		INSERT INTO
+		t_adopt (
+		pet_id,
+		user_id,
+		contacts,
+		phone,
+		id_card,
+		address,
+		work,
+		statue,
+		create_time
+		) VALUES (
+		#{petId},
+		#{userId},
+		#{contacts},
+		#{phone},
+		#{idCard},
+		#{address},
+		#{work},
+		1,
+		SYSDATE()
+		)
+	</insert>
+
+	<!-- 更新用户信息 -->
+	<update id="updateStatue">
+		UPDATE t_adopt SET
+		statue=#{statue}
+		WHERE id = #{id}
+	</update>
+
+
+</mapper>
